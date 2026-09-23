@@ -39,6 +39,15 @@
   width: 100%;
 }
 
+.lumen-stage .lumen-layered .holo-card__image {
+  filter: blur(14px) brightness(0.68) saturate(0.78);
+  transform: translate3d(0, 0, 0.01px) scale(1.08);
+}
+
+.lumen-stage .lumen-layered .holo-card__layer {
+  filter: drop-shadow(0 9px 13px rgb(0 0 0 / 0.28));
+}
+
 .lumen-stage .lumen-plate {
   display: flex !important;
   position: absolute;
