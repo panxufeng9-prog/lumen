@@ -39,20 +39,11 @@
   width: 100%;
 }
 
-.lumen-stage .lumen-dual .lumen-dual-image {
+.lumen-stage .lumen-dual .lumen-dual-canvas {
   grid-area: 1 / 1;
   width: 100%;
   height: 100%;
-  object-fit: cover;
-  opacity: 1;
-  transform: translate3d(0, 0, 0.015px);
-  z-index: 1;
-}
-
-.lumen-stage .lumen-dual .holo-card__image {
-  opacity: calc(1 - var(--dual-mix, 0));
-  transition: opacity 90ms linear;
-  z-index: 2;
+  transform: translate3d(0, 0, 0.01px);
 }
 
 .lumen-stage .lumen-layered .holo-card__image {
