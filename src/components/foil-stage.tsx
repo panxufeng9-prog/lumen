@@ -8,34 +8,16 @@ function formatNum(value: string) {
   return `#${(digits || "1").padStart(4, "0")}`;
 }
 
-function faceMaskUrl() {
-  const canvas = document.createElement("canvas");
-  canvas.width = 630;
-  canvas.height = 880;
-  const ctx = canvas.getContext("2d");
-  if (!ctx) return "";
-  ctx.fillStyle = "#fff";
-  ctx.fillRect(0, 0, 630, 880);
-  ctx.globalCompositeOperation = "destination-out";
-  const hole = ctx.createRadialGradient(315, 330, 30, 315, 360, 270);
-  hole.addColorStop(0, "rgba(0,0,0,1)");
-  hole.addColorStop(0.62, "rgba(0,0,0,0.9)");
-  hole.addColorStop(1, "rgba(0,0,0,0)");
-  ctx.fillStyle = hole;
-  ctx.beginPath();
-  ctx.ellipse(315, 350, 230, 270, 0, 0, Math.PI * 2);
-  ctx.fill();
-  return canvas.toDataURL("image/png");
-}
-
 export function FoilStage({
   src,
+  foreground,
   name,
   number,
   effect,
   tilt,
 }: {
   src: string;
+  foreground: string | null;
   name: string;
   number: string;
   effect: HoloEffect;
@@ -44,8 +26,8 @@ export function FoilStage({
   const hostRef = useRef<HTMLDivElement>(null);
   const cardRef = useRef<HoloCard | null>(null);
   const metaRef = useRef({ name, number, effect });
-  const [readyFor, setReadyFor] = useState<string | null>(null);
-  const ready = readyFor === src;
+  const [readyFor, setReadyFor] = useState<{ src: string; foreground: string | null } | null>(null);
+  const ready = readyFor?.src === src && readyFor.foreground === foreground;
   metaRef.current = { name, number, effect };
 
   useEffect(() => {
@@ -57,7 +39,6 @@ export function FoilStage({
     void (async () => {
       const { createHoloCard } = await import("@kongyo2/cards-css");
       if (dead) return;
-      const mask = faceMaskUrl();
       card = createHoloCard({
         image: src,
         imageAlt: metaRef.current.name || "宠物闪卡",
@@ -69,7 +50,9 @@ export function FoilStage({
         textureSeed: 42,
         glow: "#e4b15a",
         depth: { strength: 10, shadow: 0.28 },
-        mask: mask || undefined,
+        className: foreground ? "lumen-layered" : undefined,
+        layers: foreground ? [{ image: foreground, parallax: 12, size: "cover" }] : undefined,
+        mask: foreground || undefined,
         overlay: () => {
           const plate = document.createElement("div");
           plate.className = "lumen-plate";
@@ -94,7 +77,7 @@ export function FoilStage({
       const photo = card.element.querySelector("img");
       if (photo) photo.loading = "eager";
       const show = () => {
-        if (!dead) setReadyFor(src);
+        if (!dead) setReadyFor({ src, foreground });
       };
       photo?.addEventListener("load", show, { once: true });
       photo?.addEventListener("error", show, { once: true });
@@ -107,7 +90,7 @@ export function FoilStage({
       card?.destroy();
       cardRef.current = null;
     };
-  }, [src]);
+  }, [src, foreground]);
 
   useEffect(() => {
     cardRef.current?.setEffect(effect);
@@ -136,7 +119,9 @@ export function FoilStage({
         />
       ) : null}
       <div ref={hostRef} className={ready ? "block" : "absolute inset-0 opacity-0"} />
-      <p className="mt-3 text-center text-sm text-muted">用手指或鼠标划过卡片，箔面会跟着光走。</p>
+      <p className="mt-3 text-center text-sm text-muted">
+        {foreground ? "划过卡片，看宠物与背景错位移动。" : "划过卡片，看看箔面怎样随角度变化。"}
+      </p>
     </div>
   );
 }
