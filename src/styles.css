@@ -1,0 +1,75 @@
+@import "tailwindcss";
+@import "@kongyo2/cards-css/styles.css";
+
+@theme {
+  --font-sans: "Outfit", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Fraunces", ui-serif, Georgia, serif;
+  --color-bg: #12110e;
+  --color-surface: #1c1a16;
+  --color-fg: #f3ead7;
+  --color-muted: #a39886;
+  --color-accent: #e4b15a;
+  --color-line: #2e2a24;
+  --radius-card: 1.125rem;
+}
+
+@layer base {
+  html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    background: var(--color-bg);
+    color: var(--color-fg);
+    font-family: var(--font-sans);
+  }
+
+  button:not(:disabled),
+  [role="button"]:not(:disabled) {
+    cursor: pointer;
+  }
+}
+
+.lumen-stage {
+  width: min(20rem, 100%);
+}
+
+.lumen-stage .holo-card {
+  width: 100%;
+}
+
+.lumen-stage .lumen-plate {
+  display: flex !important;
+  position: absolute;
+  inset: auto 0 0 0;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 2.75rem 0.9rem 0.85rem;
+  background: linear-gradient(to top, rgb(18 17 14 / 0.88), rgb(18 17 14 / 0));
+  pointer-events: none;
+}
+
+.lumen-stage .lumen-name,
+.lumen-stage .lumen-num {
+  display: block !important;
+  width: auto !important;
+  margin: 0;
+  text-shadow: 0 1px 8px rgb(0 0 0 / 0.55);
+}
+
+.lumen-stage .lumen-name {
+  font-family: var(--font-display);
+  font-size: 1.35rem;
+  font-weight: 560;
+  letter-spacing: 0.01em;
+  line-height: 1.1;
+}
+
+.lumen-stage .lumen-num {
+  font-variant-numeric: tabular-nums;
+  font-size: 0.8rem;
+  letter-spacing: 0.14em;
+  color: var(--color-accent);
+}
