@@ -40,6 +40,7 @@ export function FoilStage({
   const tiltRef = useRef(tilt);
   const onAngleRef = useRef(onAngleChange);
   const onSensorRef = useRef(onSensorStatus);
+  const paintRef = useRef<((angle: number) => void) | null>(null);
   const [readyFor, setReadyFor] = useState<{ src: string; foreground: string | null } | null>(null);
   const ready = readyFor?.src === src && readyFor.foreground === foreground;
   metaRef.current = { name, number, effect };
@@ -49,14 +50,8 @@ export function FoilStage({
   onSensorRef.current = onSensorStatus;
 
   useEffect(() => {
-    const card = cardRef.current;
-    if (mode === "dual" && card) {
-      card.element.style.setProperty(
-        "--dual-mix",
-        String(Math.min(1, Math.max(0, (Math.abs(angle) - 7) / 18))),
-      );
-    }
-  }, [angle, mode, readyFor]);
+    paintRef.current?.(angle);
+  }, [angle]);
 
   useEffect(() => {
     const host = hostRef.current;
@@ -106,15 +101,33 @@ export function FoilStage({
       host.replaceChildren();
       cardRef.current = card;
       if (mode === "dual" && variant && card.front) {
-        const second = document.createElement("img");
-        second.className = "lumen-dual-image";
+        const first = card.front.querySelector<HTMLImageElement>(".holo-card__image");
+        const second = new Image();
         second.src = variant;
-        second.alt = "形态 B";
-        card.front.insertBefore(second, card.front.querySelector(".holo-card__shine"));
-        card.element.style.setProperty(
-          "--dual-mix",
-          String(Math.min(1, Math.max(0, (Math.abs(angleRef.current) - 7) / 18))),
-        );
+        if (first) {
+          void Promise.all([first.decode(), second.decode()])
+            .then(() => {
+              if (dead || cardRef.current !== card) return;
+              const canvas = document.createElement("canvas");
+              canvas.className = "holo-card__image lumen-dual-canvas";
+              canvas.width = 630;
+              canvas.height = 880;
+              const context = canvas.getContext("2d");
+              if (!context) return;
+              const paint = (nextAngle: number) => {
+                const mix = Math.min(1, Math.max(0, (Math.abs(nextAngle) - 7) / 18));
+                context.clearRect(0, 0, canvas.width, canvas.height);
+                context.drawImage(first, 0, 0, canvas.width, canvas.height);
+                context.globalAlpha = mix;
+                context.drawImage(second, 0, 0, canvas.width, canvas.height);
+                context.globalAlpha = 1;
+              };
+              paint(angleRef.current);
+              first.replaceWith(canvas);
+              paintRef.current = paint;
+            })
+            .catch(() => {});
+        }
         const rotator = card.element.querySelector<HTMLElement>(".holo-card__rotator");
         const move = (event: PointerEvent) => {
           if (tiltRef.current || (event.pointerType === "touch" && event.buttons === 0)) return;
@@ -125,7 +138,6 @@ export function FoilStage({
           );
         };
         rotator?.addEventListener("pointermove", move);
-        // The card owns its DOM and is destroyed on cleanup.
       }
       const photo = card.element.querySelector("img");
       if (photo) photo.loading = "eager";
@@ -140,6 +152,7 @@ export function FoilStage({
 
     return () => {
       dead = true;
+      paintRef.current = null;
       card?.destroy();
       cardRef.current = null;
     };
