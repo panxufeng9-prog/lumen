@@ -1,7 +1,13 @@
 import type { HoloEffect } from "@kongyo2/cards-css";
 import type { CardArtwork } from "./card-image";
 
-export type SavedCard = CardArtwork & { name: string; number: string; effect: HoloEffect };
+export type SavedCard = CardArtwork & {
+  name: string;
+  number: string;
+  effect: HoloEffect;
+  mode?: "depth" | "dual";
+  variant?: string | null;
+};
 
 const DATABASE = "lumen-card-v1";
 const STORE = "cards";
